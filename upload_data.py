@@ -1,3 +1,8 @@
+"""
+Script for programmatically uploading 3cnet data.
+Meant for 3b internal use only.
+"""
+
 import json
 import os
 from pathlib import Path
@@ -27,12 +32,32 @@ with upload_file.open("rb") as handle:
 
 data = {
     "metadata": {
-        "title": "3Cnet",
+        "title": "3Cnet: Pathogenicity prediction of human variants using knowledge transfer with deep recurrent neural networks",
         "upload_type": "dataset",
-        "description": "Pathogenicity prediction of human variants using knowledge transfer with deep recurrent neural networks",
+        "description": "testing",
         "creators": [
             {"name": "Won, Dhong-gun", "affiliation": "3billion"},
             {"name": "Lee, Kyoungyeul", "affiliation": "3billion"},
+        ],
+        # TODO add "publication_date" field before final publish
+        "access_right": "restricted",  # TODO switch to "open" before final publish
+        "access_conditions": "Internal use only",  # TODO delete this key/val pair before final publish
+        "license": "CC-BY-NC-4.0",
+        "prereserve_doi": True,
+        "keywords": [
+            "recurrent neural networks",
+            "protein sequence variants",
+            "pathogenicity prediction",
+        ],
+        "related_identifiers": [
+            {
+                "relation": "isSupplementTo",
+                "identifier": "https://doi.org/10.1101/2020.09.27.302927",
+            },
+            {
+                "relation": "isAlternateIdentifier",
+                "identifier": "https://github.com/KyoungYeulLee/3Cnet",
+            },
         ],
     }
 }
