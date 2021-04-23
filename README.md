@@ -47,7 +47,7 @@ See https://ngc.nvidia.com/catalog/containers/nvidia:pytorch for other execution
 
 1. To re-create the training/evaluation datasets
 `cd ../src`
-`pytohn build_dataset.py`
+`python build_dataset.py`
 
 # Data and files deep-dive
 
