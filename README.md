@@ -18,35 +18,48 @@ We recommend you have at least 40GB of free storage.
 https://docs.docker.com/engine/install/
 
 **nvidia-docker2**
+
 `sudo apt-get update`
+
 `sudo apt-get install -y nvidia-docker2`
 
 ### Pull the 3Cnet Docker image from Docker Hub
 The Docker image for 3Cnet is based on one of NVIDIA NGC's offerings.
+
 `sudo docker pull 3cnet-docker`
 
 ### Run docker image interactively
+
 `sudo docker run --gpus all -it -v </absolute/path/to/mount>:/workspace 3cnet-docker`
+
 See https://ngc.nvidia.com/catalog/containers/nvidia:pytorch for other execution examples.
 
 ## Clone the 3Cnet repository
+
 `git clone https://github.com/KyoungYeulLee/3Cnet.git`
 
 ## Run `download_data.py` to retrieve necessary files from Zenodo
+
 `cd 3Cnet`
+
 `python download_data.py`
 
 # Code excecution (continuing from data download)
 
 1. To train 3Cnet
+
 `cd model`
+
 `python train_model.py`
 
 1. To evaluate 3Cnet performance
+
 `python test_model.py`
 
 1. To re-create the training/evaluation datasets
+
 `cd ../src`
+
 `python build_dataset.py`
 
 # Data and files deep-dive
