@@ -1,0 +1,24 @@
+DATA_DIR: ../../data
+
+DATA_FORMAT:
+  SEQ_LEN: 201
+  MUT_THRESHOLD: 0.5
+
+BUILD:
+  VARIANT_PATH: variant_data/external_nonsyn_variants.txt
+  REFSEQ_PATH: transcript_seq.csv
+  DATASET_PATH: sequence_data/external_nonsyn_dataset.bin
+  MUT_PATH: sequence_data/external_nonsyn_mut.npy
+
+VARIANT:
+  DATASET_PATH: sequence_data/external_nonsyn_dataset.bin
+  MUT_PATH: sequence_data/external_nonsyn_mut.npy
+  VARIANT_PATH: variant_data/external_nonsyn_variants.txt
+
+MERGE:
+  DATA_PATH_LIST: [sequence_data/external_missense_dataset.bin, sequence_data/external_truncated_dataset.bin]
+  MUT_PATH_LIST: [sequence_data/external_missense_mut.npy, sequence_data/external_truncated_mut.npy]
+  SNV_PATH_LIST: [SNVBOX_features/external_missense_snvbox.npy, 'none'] # 'none' for zero-padding
+  MERGED_DATA: sequence_data/external_nonsyn_dataset.bin
+  MERGED_MUT: sequence_data/external_nonsyn_mut.npy
+  MERGED_SNV: SNVBOX_features/external_nonsyn_snvbox.npy

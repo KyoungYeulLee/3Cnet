@@ -1,7 +1,9 @@
 '''
 A module to build dataset to be used for predictor
 '''
+import os
 import sys
+import argparse
 import pickle as pk
 import logging
 import numpy as np
@@ -63,13 +65,12 @@ def load_np2seq(seq_csv_path: str, np_ids=None) -> dict:
     return np2seq
 
 
-def get_seq_input(np2seq: dict, mut_list: list, seq_len: int, use_seq_block: bool) -> tuple:
+def get_seq_input(np2seq: dict, mut_list: list, seq_len: int) -> tuple:
     '''
     build a numpy array encoding seqence data for the mutation list
     :np2seq {dict} : {np:seq}
     :mut_list {list} : list of mutation in HGVSp terms
     :seq_len {int} : the length for numpy array
-    :use_seq_block {bool} : whether to use sequences around mutation residue or not
     :return {array} : 2D array for integer representation of seqences
     '''
     count = {
@@ -77,35 +78,44 @@ def get_seq_input(np2seq: dict, mut_list: list, seq_len: int, use_seq_block: boo
         'unexpected_mut': 0,
         'featurize_failure': 0,
         'incorrect residue': 0,
-        'length_limit': 0,
     }
     ref_data = []
     seq_data = []
     mut_ids = []
+    site_data = []
     for mut_idx, mut in enumerate(mut_list):
-        if mut_idx % 10000 == 0:
-            print(mut_idx)
         np_id, mut_code = mut.split(':')
         if np_id not in np2seq:  # np_id not in sequence dictionary
             count['np_not_found'] += 1
             continue
+
         seq = np2seq[np_id]
-        # mut_tup = (mut_res, mut_ori, mut_aft)
         mut_tup = fd.mut2tup(mut_code)
         if not mut_tup:  # unexpected mutation format
             count['unexpected_mut'] += 1
             continue
+
         if not fd.check_res(mut_code, seq):
             count['incorrect residue'] += 1
             continue
-        if not use_seq_block and seq_len < len(seq):
-            count['length_limit'] += 1
-            continue
 
-        # calling the 4th argument as integer means reference sequence (amino acid not changed)
-        ref_data.append(fd.seq2input(seq, seq_len, use_seq_block, mut_tup[0]))
-        seq_data.append(fd.seq2input(seq, seq_len, use_seq_block, mut_tup))
+        mut_res = mut_tup[0]
+        ref_data.append(
+            fd.seq2input(seq, seq_len, mut_res)
+        ) # calling the 2th argument as integer means reference sequence (amino acid not changed)
+        seq_data.append(
+            fd.seq2input(seq, seq_len, mut_tup)
+        )
+
+        if mut_res == 0: # start_lost
+            mut_res = int(seq_len / 2) + 1
+        site_range = [
+            mut_res - int(seq_len / 2),
+            mut_res + int(seq_len / 2),
+        ]
+        site_data.append(site_range)
         mut_ids.append(mut)
+
     logging.info("the number of mutation np_id not found = %i", count['np_not_found'])
     logging.info(
         "the number of unexpectedly formatted mutations = %i", count['unexpected_mut'])
@@ -114,10 +124,9 @@ def get_seq_input(np2seq: dict, mut_list: list, seq_len: int, use_seq_block: boo
     logging.info(
         "the number of mutations with incorrect residues = %i", count['incorrect residue'])
     logging.info(
-        "the number of mutations exceed the maximum length = %i", count['length_limit'])
-    logging.info(
         "the number of mutations transformed into input data = %i", len(mut_ids))
-    input_data = (np.array(ref_data), np.array(seq_data))
+    input_data = (np.array(ref_data), np.array(seq_data), np.array(site_data))
+
     return input_data, np.array(mut_ids)
 
 
@@ -151,49 +160,24 @@ def get_patho_input(mut2act: dict, mut_ids: list, threshold: float, reverse=Fals
     return np.array(patho_np)
 
 
-def get_site_np(mut_ids: list, seq_len: int, use_seq_block: bool) -> np.array:
-    '''
-    return site_np from mutation id
-    :mut_ids {list}: list of mutation codes="NP_000143.2:p.Phe181Leu"
-    :seq_len {int}: length of sequence array
-    :use_seq_block {bool}: whether to use sequence block (True) or whole sequence (False)
-    :return {np.array}: N * 2 array containging start residue and end residue of data
-    '''
-    site_np = []
-    for mut in mut_ids:
-        mut_code = mut.split(':')[1]
-        mut_tup = fd.mut2tup(mut_code)
-        mut_res = mut_tup[0]
-        if use_seq_block:
-            start_res = mut_res - int(seq_len/2)
-            end_res = mut_res + int(seq_len/2)
-        else:
-            start_res = 1
-            end_res = seq_len
-        res_range = np.array([start_res, end_res])
-        site_np.append(res_range)
-    return np.array(site_np)
-
-
-def save_dataset(dataset_path: str, input_seq: tuple, patho_np=None, site_np=None):
-    '''
+def save_dataset(dataset_path: str, input_data: tuple, patho_np=None):
+    """
     save dataset file to the path concatenating i
     nput_seq and pathonp
     :dataset_path {str}: the path to save the data set
-    :input_seq {tup}: a tuple contaning ref_np and seq_np
+    :input_seq {tup}: a tuple contaning ref_np, alt_np, and site_np
     :patho_np {numpy array}: a numpy array for pathogenicity. None if not known
-    '''
-    ref_np, seq_np = input_seq
+    """
+    ref_np, alt_np, site_np = input_data
     if patho_np is None:  # pathogenicity is unknown
         patho_np = np.array([[0, 0]] * len(ref_np), dtype=int)
-    dataset = (ref_np, seq_np, patho_np)
-    if site_np is not None:
-        dataset = (ref_np, seq_np, patho_np, site_np)
-    with open(dataset_path, 'wb') as set_file:
+    dataset = (ref_np, alt_np, patho_np, site_np)
+
+    with open(dataset_path, "wb") as set_file:
         pk.dump(dataset, set_file, protocol=4)
 
 
-def main():
+def main(config):
     '''
     main function
     '''
@@ -202,27 +186,45 @@ def main():
                         level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
     logging.info('=== dataset building ===')
 
+    with open(args.config) as yml:
+        config = yaml.load(yml, Loader=yaml.FullLoader)
+
+    data_dir = config['DATA_DIR']
+
     # dataset options
-    seq_len = 201
-    use_seq_block = True
-    mut_threshold = 0.5
+    seq_len = config['DATA_FORMAT']['SEQ_LEN']
+    mut_threshold = config['DATA_FORMAT']['MUT_THRESHOLD']
 
     # input files
-    mut_path = "../data/variant_data/common_variants.txt" # path of data file having variants.
-    refseq_path = "../data/transcript_seq.csv" # path for sequences of Refseq transcripts
+    mut_path = os.path.join(data_dir, config['BUILD']['VARIANT_PATH']) # path of data file having variants.
+    refseq_path = os.path.join(data_dir, config['BUILD']['REFSEQ_PATH']) # path for sequences of Refseq transcripts
 
     # output files
-    dataset_path = "../data/sequence_data/common_dataset.bin" # path to save dataset file
-    mut_id_path = "../data/sequence_data/common_mut.npy" # path to save the variant ID file
+    dataset_path = os.path.join(data_dir, config['BUILD']['DATASET_PATH']) # path to save dataset file
+    mut_id_path = os.path.join(data_dir, config['BUILD']['MUT_PATH']) # path to save the variant ID file
 
     mut2act = load_mut2act(mut_path)
     np2seq = load_np2seq(refseq_path)
-    input_data, mut_ids = get_seq_input(np2seq, list(mut2act.keys()), seq_len, use_seq_block)
+    input_data, mut_ids = get_seq_input(np2seq, list(mut2act.keys()), seq_len)
     input_patho = get_patho_input(mut2act, mut_ids, mut_threshold)
-    site_np = get_site_np(mut_ids, seq_len, use_seq_block)
-    save_dataset(dataset_path, input_data, patho_np=input_patho, site_np=site_np)
+    save_dataset(dataset_path, input_data, patho_np=input_patho)
     np.save(mut_id_path, mut_ids)
 
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(description='')
+    parser.add_argument('-c', '--config', default='config.yaml', type=str, help='path for config file')
+    parser.add_argument('-t', '--title', default='code', type=str, help='title of this job')
+    args = parser.parse_args()
+    logging.basicConfig(filename='build_dataset.py.log',
+                        format='%(asctime)s %(levelname)-8s %(message)s',
+                        level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+    with open(args.config) as yml:
+        config = yaml.load(yml, Loader=yaml.FullLoader)
+
+    logging.info(f"=== start {args.title} ===")
+
+    main(config)
+
+    logging.info(f"... end {args.title} ...")
+

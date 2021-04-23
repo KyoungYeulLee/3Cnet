@@ -1,0 +1,45 @@
+DATA_DIR: ../../data
+
+MODEL:
+  MODEL_DIR: model
+  MODEL_TYPE: 3Cnet
+  MODEL_NAME: missense
+  TID_PATH: transcript_ids.txt
+  MSA_DIR: msa_data
+
+  DATA_PATH: sequence_data/clinvar_dataset.bin
+  DATA_ID_PATH: sequence_data/clinvar_mut.npy
+  DATA_SNVBOX: SNVBOX_features/clinvar_snvbox.npy # none for zero-padding
+  ADD_PATH: sequence_data/common_dataset.bin # none for no additional negatives
+  ADD_ID_PATH: sequence_data/common_mut.npy
+  ADD_SNVBOX: SNVBOX_features/common_snvbox.npy # none for zero-padding
+  ENSEMBLE_PATH: sequence_data/conservation_dataset.bin
+  ENSEMBLE_ID_PATH: sequence_data/conservation_mut.npy
+  ENSEMBLE_SNVBOX: SNVBOX_features/conservation_snvbox.npy # none for zero-padding
+
+  SAVE_EACH_EPOCH: [True]
+  TEST_RATIO: [0.01]
+
+HYPERS:
+  EMB_SIZE: [16]
+  RNN_SIZE: [64]
+  CNN_SIZE: [64]
+  FC_SIZE: [32]
+  SNV_FC_SIZE: [32]
+  BATCH_SIZE: [128]
+  OPTIMIZER: ['rmsprop']
+  VALUE: ['val_loss']
+  EPOCH: [50]
+  PATIENCE: [10]
+  LEARNING_RATE: [0.001]
+  DROPOUT: [0.5]
+
+VALID:
+  VALID_DATA_PATH: sequence_data/external_missense_dataset.bin
+  VALID_ID_PATH: sequence_data/external_missense_mut.npy
+  VALID_SNVBOX: SNVBOX_features/external_missense_snvbox.npy # none for zero-padding
+  USE_TEST_ID: [True] # False uses all the data in VALID_DATA_PATH
+  VALID_NAME: external_missense
+  VALID_METRICS: ['accuracy', 'roc_auc', 'pr_auc'] # give a blank list to skip evaluation.
+  VALID_TYPE: single
+  MODEL_NUM: [] # model epoch for test
