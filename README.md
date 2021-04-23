@@ -1,66 +1,93 @@
 ﻿# Installation
----
-3Cnet was trained uses the following versions of software:
+
+__3Cnet was trained uses the following versions of software:__
 - Python 3.7
 - CUDA 10.0
 - PyTorch 1.4
 - nvidia driver version 410.48
 - Ubuntu 18.04
+---
+<br>
 
 ## Preprocess: Docker
+<br>
+
 Follow the steps in this section if you prefer a ready-to-go environment.
 If you prefer to set up the environment on your own, skip directly to "Clone the 3Cnet repository."
 
 We recommend you have at least 40GB of free storage.
 
-### Install Docker and nvidia-docker2
-**Docker Engine** (we use Docker 20.10.5)
+<br>
+
+### __Install Docker and nvidia-docker2__
+
+<ins>Docker Engine</ins> (we use Docker 20.10.5)
+
 https://docs.docker.com/engine/install/
 
-**nvidia-docker2**
 
-`sudo apt-get update`
+<ins>nvidia-docker2</ins>
 
-`sudo apt-get install -y nvidia-docker2`
+```bash
+$ sudo apt-get update
+$ sudo apt-get install -y nvidia-docker2
+```
+<br>
 
-### Pull the 3Cnet Docker image from Docker Hub
+### __Pull the 3Cnet Docker image from Docker Hub__
 The Docker image for 3Cnet is based on one of NVIDIA NGC's offerings.
 
-`sudo docker pull 3cnet-docker`
+```bash
+$ sudo docker pull 3cnet-docker
+```
 
-### Run docker image interactively
+### __Run docker image interactively__
 
-`sudo docker run --gpus all -it -v </absolute/path/to/mount>:/workspace 3cnet-docker`
+```bash
+$ sudo docker run --gpus all -it -v </absolute/path/to/mount>:/workspace 3cnet-docker
+```
 
 See https://ngc.nvidia.com/catalog/containers/nvidia:pytorch for other execution examples.
 
+---
+
+<br>
+
 ## Clone the 3Cnet repository
 
-`git clone https://github.com/KyoungYeulLee/3Cnet.git`
+```bash
+$ git clone https://github.com/KyoungYeulLee/3Cnet.git
+```
 
 ## Run `download_data.py` to retrieve necessary files from Zenodo
 
-`cd 3Cnet`
-
-`python download_data.py`
+```bash
+$ cd 3Cnet
+$ python download_data.py
+```
+<br>
 
 # Code excecution (continuing from data download)
 
 1. To train 3Cnet
 
-`cd model`
-
-`python train_model.py`
+```bash
+$ cd model
+$ python train_model.py
+```
 
 1. To evaluate 3Cnet performance
 
-`python test_model.py`
+```bash
+$ python test_model.py
+```
 
 1. To re-create the training/evaluation datasets
 
-`cd ../src`
-
-`python build_dataset.py`
+```bash
+$ cd ../src
+$ python build_dataset.py
+```
 
 # Data and files deep-dive
 
