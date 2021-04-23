@@ -1,5 +1,8 @@
+/src/check_redundancy.py
+/src/check_patient.py
 /data/*
 !/data/README.md
+*.swp
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
