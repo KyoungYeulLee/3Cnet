@@ -1,12 +1,5 @@
 '''
 A module training deep learning model to predict pathogenicity from given samples
-def data_subset(dataset: tuple, sample_idx: np.array) -> tuple:
-def attach_data(dataset: tuple, novel_set: tuple) -> tuple:
-def get_dataset(data_path: str, id_path: str) -> tuple:
-def split_sample(sample_array: np.array, ratio=0.8, mut_ids=np.array([]), test_mut=np.array([])):
-def get_pathogenicity(dataset: tuple, sample_idx: np.array) -> np.array:
-def amplify_pos(sample_array: np.array, patho_array: np.array, neg_add=0):
-python train_model.py (-c config.yaml)
 '''
 import argparse
 import logging
@@ -15,7 +8,7 @@ import os
 import sys
 import numpy as np
 import yaml
-import pt_models as pm
+import LSTM_models as pm
 import deep_utilities as du
 
 
@@ -68,7 +61,16 @@ def get_dataset(data_path: str, id_path: str) -> tuple:
 
 
 def attach_snvbox(dataset, snvbox_path):
-    snvbox_feature = np.load(snvbox_path)
+    '''
+    attach snvbox features at the end of dataset tuple
+    for example, rapsi format -> rapsix format where 'x' stands for snvbox features
+    '''
+    if snvbox_path[-4:] == 'none':
+        sample_len = len(dataset[0])
+        snvbox_feature = np.zeros((sample_len, 85))
+    else:
+        snvbox_feature = np.load(snvbox_path)
+
     if len(dataset[0]) != len(snvbox_feature):
         print("the length of snvbox feature is different with dataset")
         sys.exit()
@@ -77,6 +79,10 @@ def attach_snvbox(dataset, snvbox_path):
 
 
 def remove_vus(dataset, mut_ids):
+    '''
+    remove the samples having ambiguous pathogenicity
+    if mut_ids == [], do not select mutation ids
+    '''
     patho_np = dataset[2]
     non_vus_idx = np.array([idx for idx, patho in enumerate(patho_np) if np.sum(patho) == 1])
     # patho_np = [[1, 0], [0, 1], ...]. np.sum(patho)==1 means benign or pathogenic sample
@@ -184,28 +190,41 @@ class SingleTrainer():
     '''
     def __init__(self, config: dict):
         self.config = config
-        self.log_dir = f"{config['MODEL']['MODEL_DIR']}/{config['MODEL']['MODEL_TYPE']}/" +\
-                         config['MODEL']['MODEL_NAME']
+        self.data_dir = config['DATA_DIR']
         self.model_type = config['MODEL']['MODEL_TYPE']
+        self.log_dir = os.path.join(self.data_dir,
+                                    config['MODEL']['MODEL_DIR'],
+                                    config['MODEL']['MODEL_TYPE'],
+                                    config['MODEL']['MODEL_NAME'])
         self.dataset = tuple()
         self.data_mut = np.array([])
         self.add_set = tuple()
         self.add_mut = np.array([])
 
-        self.dataset, self.data_mut = get_dataset(config['MODEL']['DATA_PATH'],
-                                                  config['MODEL']['DATA_ID_PATH'])
+        self.dataset, self.data_mut = get_dataset(
+            os.path.join(self.data_dir, config['MODEL']['DATA_PATH']),
+            os.path.join(self.data_dir, config['MODEL']['DATA_ID_PATH']),
+        )
 
         if get_data_format(self.model_type) == 'rapsix':
-            self.dataset = attach_snvbox(self.dataset, config['MODEL']['DATA_SNVBOX'])
+            self.dataset = attach_snvbox(
+                self.dataset,
+                os.path.join(self.data_dir, config['MODEL']['DATA_SNVBOX']),
+            )
 
         self.dataset, self.data_mut = remove_vus(self.dataset, self.data_mut)
 
         if config['MODEL']['ADD_PATH'] != 'none':
-            self.add_set, self.add_mut = get_dataset(config['MODEL']['ADD_PATH'],
-                                                     config['MODEL']['ADD_ID_PATH'])
+            self.add_set, self.add_mut = get_dataset(
+                os.path.join(self.data_dir, config['MODEL']['ADD_PATH']),
+                os.path.join(self.data_dir, config['MODEL']['ADD_ID_PATH']),
+            )
 
             if get_data_format(self.model_type) == 'rapsix':
-                self.add_set = attach_snvbox(self.add_set, config['MODEL']['ADD_SNVBOX'])
+                self.add_set = attach_snvbox(
+                    self.add_set,
+                    os.path.join(self.data_dir, config['MODEL']['ADD_SNVBOX']),
+                )
 
             self.add_set, self.add_mut = remove_vus(self.add_set, self.add_mut)
 
@@ -219,7 +238,9 @@ class SingleTrainer():
         test_ids = np.array([])
 
         if 'TEST_ID_PATH' in config['MODEL']:
-            test_ids = np.load(config['MODEL']['TEST_ID_PATH'])
+            test_ids = np.load(
+                os.path.join(self.data_dir, config['MODEL']['TEST_ID_PATH'])
+            )
 
         if test_ids.size != 0: # use given test_ids as test set and the other become train set
             train_idx, test_idx = split_sample(data_idx, mut_ids=self.data_mut,
@@ -232,7 +253,10 @@ class SingleTrainer():
             train_idx, test_idx = split_sample(data_idx, ratio=1-test_ratio)
             test_ids = self.data_mut[test_idx]
 
-        np.save(f"{self.log_dir}/test_ids.npy", test_ids)
+        np.save(
+            os.path.join(self.log_dir, 'test_ids.npy'),
+            test_ids
+        )
 
         train_idx, test_idx = split_sample(train_idx, ratio = 0.99)
         train_idx = amplify_pos(train_idx, get_pathogenicity(self.dataset, train_idx),
@@ -262,11 +286,16 @@ class EnsembleTrainer(SingleTrainer):
     '''
     def __init__(self, config: dict):
         super().__init__(config)
-        self.ensemble_set, _ = get_dataset(config['MODEL']['ENSEMBLE_PATH'], \
-                                           config['MODEL']['ENSEMBLE_ID_PATH'])
+        self.ensemble_set, _ = get_dataset(
+            os.path.join(self.data_dir, config['MODEL']['ENSEMBLE_PATH']),
+            os.path.join(self.data_dir, config['MODEL']['ENSEMBLE_ID_PATH']),
+        )
 
         if get_data_format(self.model_type) == 'rapsix':
-            self.ensemble_set = attach_snvbox(self.ensemble_set, config['MODEL']['ENSEMBLE_SNVBOX'])
+            self.ensemble_set = attach_snvbox(
+                self.ensemble_set,
+                os.path.join(self.data_dir, config['MODEL']['ENSEMBLE_SNVBOX']),
+            )
 
     def train_model(self):
         train_idx, test_idx = self.set_train_test()
@@ -328,16 +357,19 @@ def main():
     parser.add_argument('-c', '--config', default='config.yaml', help='path for config file')
     parser.add_argument('-t', '--title', default='code', help='title for this process (optional)')
     args = parser.parse_args()
-    logging.basicConfig(filename='model_training.log',
+    logging.basicConfig(filename='train_model.py.log',
                         format='%(asctime)s %(levelname)-8s %(message)s',
                         level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S')
+
     with open(args.config) as yml:
         config = yaml.load(yml, Loader=yaml.FullLoader)
     logging.info(f"=== start {args.title} ===")
 
     ### build necessary directories for the model
-    log_dir = f"{config['MODEL']['MODEL_DIR']}/{config['MODEL']['MODEL_TYPE']}/" +\
-                config['MODEL']['MODEL_NAME']
+    log_dir = os.path.join(config['DATA_DIR'],
+                           config['MODEL']['MODEL_DIR'],
+                           config['MODEL']['MODEL_TYPE'],
+                           config['MODEL']['MODEL_NAME'])
     build_directory(log_dir)
     save_config(args.config, log_dir)
 

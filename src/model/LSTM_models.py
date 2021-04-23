@@ -1,27 +1,7 @@
 '''
 A module containing pytorch models for pathogenicity predictor
-
-class Mark3():
-    def __init__(self, config: dict):
-    def check_model(self):
-    def build(self):
-    def train_epoch(self, train_loader: object, criterion: 'func', optimizer: 'func'):
-    def evaluate_epoch(self, test_loader: object, criterion: 'func') -> tuple:
-    def train(self, train_set: tuple, test_set: tuple):
-    def load(self, model_num):
-    def predict(self, test_set):
-    def evaluate(self, y_test, y_pred, metrics=None, out_path=''):
-
-
-class Mark4(Mark3):
-    def __init__(self, config: dict):
-    def build(self):
-    def get_msa_tensor(self, np_ids: np.array, res_range: np.array) -> tensor:
-    def train_epoch(self, train_loader: object, criterion: 'func', optimizer: 'func'):
-    def evaluate_epoch(self, test_loader: object, criterion: 'func') -> tuple:
-    def train(self, train_set: tuple, test_set: tuple):
 '''
-
+import os
 import sys
 import timeit
 import numpy as np
@@ -30,8 +10,8 @@ import torch.tensor as tensor
 import torch.utils.data as td
 import evaluate_metrics as em
 import deep_utilities as du
-import my_datasets as md
-import my_networks as mn
+import LSTM_datasets as md
+import LSTM_networks as mn
 
 
 USE_CUDA = torch.cuda.is_available
@@ -50,6 +30,7 @@ class SingleTask():
         hypers = hyper_caller.hyper_calling()
         hypers['log_dir'] = config['log_dir']
 
+        self.data_dir = config['DATA_DIR']
         self.n_vocab = 22
         self.n_aa = self.n_vocab - 1
         self.n_classes = 2
@@ -58,11 +39,22 @@ class SingleTask():
         self.save_each_epoch = config['MODEL']['SAVE_EACH_EPOCH'][0]
         self.msa_dict = {}
 
-        with open(config['MODEL']['TID_PATH']) as np_file:
+        with open(
+            os.path.join(
+                self.data_dir,
+                config['MODEL']['TID_PATH'],
+            )
+        ) as np_file:
             for file_line in np_file:
                 words = file_line.strip('\n').split('\t')
                 np_id = words[0]
-                msa_mat = np.load(f"{config['MODEL']['MSA_DIR']}/{np_id}.npy")
+                msa_mat = np.load(
+                    os.path.join(
+                        self.data_dir,
+                        config['MODEL']['MSA_DIR'],
+                        f"{np_id}.npy",
+                    )
+                )
                 self.msa_dict[np_id] = md.MSADataset(msa_mat)
 
     def check_model(self):
@@ -373,6 +365,9 @@ class MultiTask(SingleTask):
 
 
 class ThreeCnet(MultiTask):
+    '''
+    3Cnet
+    '''
     def __init__(self, config: dict):
         '''
         Initialization
