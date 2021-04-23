@@ -6,7 +6,7 @@ __3Cnet was trained uses the following versions of software:__
 - PyTorch 1.4
 - nvidia driver version 410.48
 - Ubuntu 18.04
----
+
 <br>
 
 ## Preprocess: Docker
@@ -49,8 +49,6 @@ $ sudo docker run --gpus all -it -v </absolute/path/to/mount>:/workspace 3cnet-d
 
 See https://ngc.nvidia.com/catalog/containers/nvidia:pytorch for other execution examples.
 
----
-
 <br>
 
 ## Clone the 3Cnet repository
@@ -65,7 +63,6 @@ $ git clone https://github.com/KyoungYeulLee/3Cnet.git
 $ cd 3Cnet
 $ python download_data.py
 ```
-<br>
 
 # Code excecution (continuing from data download)
 
@@ -76,13 +73,13 @@ $ cd model
 $ python train_model.py
 ```
 
-1. To evaluate 3Cnet performance
+2. To evaluate 3Cnet performance
 
 ```bash
 $ python test_model.py
 ```
 
-1. To re-create the training/evaluation datasets
+3. To re-create the training/evaluation datasets
 
 ```bash
 $ cd ../src
