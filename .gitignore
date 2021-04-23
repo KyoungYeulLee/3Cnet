@@ -1,5 +1,6 @@
-/src/check_redundancy.py
-/src/check_patient.py
+/src/featurize/remove_variants.py
+/src/featurize/check_redundancy.py
+/src/featurize/check_patient.py
 .vscode/
 /data/*
 !/data/README.md
