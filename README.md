@@ -62,6 +62,7 @@ $ git clone https://github.com/KyoungYeulLee/3Cnet.git
 ```bash
 $ cd 3Cnet
 $ python download_data.py
+$ tar -xvf data.tar.gz
 ```
 
 # Code excecution (continuing from data download)
