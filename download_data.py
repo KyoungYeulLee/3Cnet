@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
     dl_info = gen_download_info(args)
 
-    print(f"Downloading {len(dl_info.keys())} files: ")
+    print(f"Downloading {len(dl_info.keys())} file(s): ")
     for key, val in dl_info.items():
         download_file(
             dl_item=val,

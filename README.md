@@ -70,7 +70,7 @@ $ tar -xvf data.tar.gz
 1. To train 3Cnet
 
 ```bash
-$ cd model
+$ cd ./src/model
 $ python train_model.py
 ```
 
@@ -83,7 +83,7 @@ $ python test_model.py
 3. To re-create the training/evaluation datasets
 
 ```bash
-$ cd ../src
+$ cd ../featurize
 $ python build_dataset.py
 ```
 
