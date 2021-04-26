@@ -1,6 +1,6 @@
 ﻿# Installation
 
-__3Cnet was trained uses the following versions of software:__
+__3Cnet was trained using the following versions of software:__
 - Python 3.7
 - CUDA 10.0
 - PyTorch 1.4
@@ -45,6 +45,7 @@ $ sudo docker pull 3billion/3cnet:0.0.1
 
 ```bash
 $ sudo docker run --gpus all -it -v </absolute/path/to/mount>:/workspace 3billion/3cnet:0.0.1
+$ cd workspace
 ```
 
 See https://ngc.nvidia.com/catalog/containers/nvidia:pytorch for other execution examples.
@@ -90,6 +91,8 @@ $ python build_dataset.py
 # Data and files deep-dive
 <ins>Underlined</ins> files are the top-level files or scripts intended to be directly modified or executed by the user.
 
+- download_data.py: Retrieves `data/` directory from Zenodo
+- 3cnet.yaml: Anaconda-compatible environment yaml. (deprecated, also contains dependencies not directly used by 3cnet)
 
 1. src/featurize
    - <ins>build_dataset.py</ins>: Run this to parse and process raw data into pytorch-compatible inputs.
@@ -136,6 +139,3 @@ $ python build_dataset.py
      - external_truncated_variants.txt: Start lost, stop gained, deletion, and frameshift variants found in ClinVar 2020.08 but not in ClinVar 2020.04
      - external_nonsyn_variants.txt: File that combines `external_missense_variants.txt` and `external_truncated_variants.txt`
      - patient_variants.txt: Collection of disease-causing and non-causal variants from 111 patients (variant duplicates removed)
-     
-   - transcript_ids.txt: transcript ids of RefSeq human genome data
-   - transcript_seq.csv: transcript sequences of RefSeq human genome data
