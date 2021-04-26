@@ -91,7 +91,7 @@ $ python build_dataset.py
 # Data and files deep-dive
 <ins>Underlined</ins> files are the top-level files or scripts intended to be directly modified or executed by the user.
 
-- download_data.py: Retrieves `data/` directory from Zenodo
+- <ins>download_data.py</ins>: Retrieves `data/` directory from Zenodo
 - 3cnet.yaml: Anaconda-compatible environment yaml. (deprecated, also contains dependencies not directly used by 3cnet)
 
 1. src/featurize
