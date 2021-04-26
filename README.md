@@ -38,13 +38,13 @@ $ sudo apt-get install -y nvidia-docker2
 The Docker image for 3Cnet is based on one of NVIDIA NGC's offerings.
 
 ```bash
-$ sudo docker pull 3cnet-docker
+$ sudo docker pull 3billion/3cnet:0.0.1
 ```
 
 ### __Run docker image interactively__
 
 ```bash
-$ sudo docker run --gpus all -it -v </absolute/path/to/mount>:/workspace 3cnet-docker
+$ sudo docker run --gpus all -it -v </absolute/path/to/mount>:/workspace 3billion/3cnet:0.0.1
 ```
 
 See https://ngc.nvidia.com/catalog/containers/nvidia:pytorch for other execution examples.
