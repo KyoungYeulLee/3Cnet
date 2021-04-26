@@ -1,7 +1,7 @@
 /src/featurize/remove_variants.py
 /src/featurize/check_redundancy.py
 /src/featurize/check_patient.py
-/data/*
+/data
 !/data/README.md
 *.swp
 

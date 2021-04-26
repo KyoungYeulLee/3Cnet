@@ -123,12 +123,12 @@ if __name__ == "__main__":
         help="Example: 12.3456/zenodo.789012",
     )
     parser.add_argument(
-        "-r", "--record", type=str, default="", help="Example: 246802"
+        "-r", "--record", type=str, default="4716879", help="Example: 246802"
     )
     parser.add_argument(
         "-n", "--retries", type=int, default=5, help="Max retry attempts"
     )
-    parser.add_argument("-o", "--outdir", type=str, help="File save directory")
+    parser.add_argument("-o", "--outdir", type=str, default=".", help="File save directory")
     parser.add_argument("-s", "--sandbox", default=False, action="store_true")
     parser.add_argument(
         "-c",
@@ -141,7 +141,7 @@ if __name__ == "__main__":
 
     dl_info = gen_download_info(args)
 
-    print(f"Downloading {len(dl_info.keys())} files: ")
+    print(f"Downloading {len(dl_info.keys())} file(s): ")
     for key, val in dl_info.items():
         download_file(
             dl_item=val,
