@@ -1,64 +1,49 @@
 ﻿# Installation
 
 __3Cnet was trained using the following versions of software:__
-- Python 3.7
-- CUDA 10.0
-- PyTorch 1.4
-- nvidia driver version 410.48
-- Ubuntu 18.04
+- [Python v3.7](https://www.python.org)
+- [CUDA v10.0](https://developer.nvidia.com/cuda-toolkit)
+- [PyTorch v1.4](https://pytorch.org)
+- [NVIDIA driver version v410.48](https://www.nvidia.com/Download/index.aspx)
+- [Ubuntu v18.04](https://ubuntu.com)
 
 <br>
 
-## Preprocess: Docker
-<br>
-
-Follow the steps in this section if you prefer a ready-to-go environment.
-If you prefer to set up the environment on your own, skip directly to "Clone the 3Cnet repository."
-
-We recommend you have at least 40GB of free storage.
-
-<br>
-
-### __Install Docker and nvidia-docker2__
-
+### Preprocess: Docker
+- Follow the steps in this section if you prefer a ready-to-go environment.
+- If you prefer to set up the environment on your own, skip directly to "Clone the 3Cnet repository."
+- We recommend you have at least 40GB of free storage.
+- See [NVIDIA NGS pytorch container docs](https://ngc.nvidia.com/catalog/containers/nvidia:pytorch) for other execution examples.
+#### __Install Docker and nvidia-docker2__
 <ins>Docker Engine</ins> (we use Docker 20.10.5)
-
-https://docs.docker.com/engine/install/
-
-
-<ins>nvidia-docker2</ins>
-
+> https://docs.docker.com/engine/install/
+<ins>NVIDIA/nvidia-docker2</ins>
 ```bash
 $ sudo apt-get update
 $ sudo apt-get install -y nvidia-docker2
 ```
-<br>
-
-### __Pull the 3Cnet Docker image from Docker Hub__
-The Docker image for 3Cnet is based on one of NVIDIA NGC's offerings.
-
+#### __Pull the 3Cnet Docker image from Docker Hub__
+- The Docker image for 3Cnet is based on one of NVIDIA NGC's offerings.
 ```bash
 $ sudo docker pull 3billion/3cnet:0.0.1
 ```
-
-### __Run docker image interactively__
-
+#### __Run docker image interactively__
 ```bash
 $ sudo docker run --gpus all -it -v </absolute/path/to/mount>:/workspace 3billion/3cnet:0.0.1
 $ cd workspace
 ```
 
-See https://ngc.nvidia.com/catalog/containers/nvidia:pytorch for other execution examples.
-
 <br>
 
-## Clone the 3Cnet repository
+### Clone the 3Cnet repository
 
 ```bash
 $ git clone https://github.com/KyoungYeulLee/3Cnet.git
 ```
 
-## Run `download_data.py` to retrieve necessary files from Zenodo
+<br>
+
+### Run `download_data.py` to retrieve necessary files from [Zenodo](https://zenodo.org)
 
 ```bash
 $ cd 3Cnet
@@ -66,7 +51,9 @@ $ python download_data.py
 $ tar -xvf data.tar.gz
 ```
 
-# Code excecution (continuing from data download)
+<br>
+
+# Code execution (continuing from data download)
 
 1. To train 3Cnet
 
@@ -88,20 +75,22 @@ $ cd ../featurize
 $ python build_dataset.py
 ```
 
-# Data and files deep-dive
+<br>
+
+# Data and file structures
 <ins>Underlined</ins> files are the top-level files or scripts intended to be directly modified or executed by the user.
 
-- <ins>download_data.py</ins>: Retrieves `data/` directory from Zenodo
+- <ins>download_data.py</ins>: Retrieves `data/` directory from Zenodo.
 - 3cnet.yaml: Anaconda-compatible environment yaml. (deprecated, also contains dependencies not directly used by 3cnet)
 
-1. src/featurize
+### **src/featurize**
    - <ins>build_dataset.py</ins>: Run this to parse and process raw data into pytorch-compatible inputs.
    - <ins>config.yaml</ins>: A file specifying paths used by scripts in `src/featurize`
    - featurize_data.py: A dependency used by `build_dataset.py` that converts HGVSp nomenclature to amino acid sequences.
    - get_variants.py: Used to map sequences in `/data/variant_data` to back HGVSp identifiers.
    - merge_data.py: Script that bundles the two different sequence data with SNVbox features. (generates `*_dataset.bin`, `*_mut.npy`, and `*_snvbox.npy` files)
   
-2. src/model
+### **src/model**
    - <ins>config.yaml</ins>: A file specifying paths and hyperparameters used for model training or evaluation. Alter this to modify file paths and/or settings.
    - deep_utilities.py: A generic collection of utility functions and classes used broadly by other files in src/model.
    - LSTM_datasets.py: Dataset class definition for 3Cnet.
@@ -111,7 +100,7 @@ $ python build_dataset.py
    - <ins>train_model.py</ins>: Top-level script for 3Cnet training. Outcomes are saved in `data/model/(MODEL_TYPE)/(MODEL_NAME)`.
    - <ins>test_model.py</ins>: Evaluate model using values under the `VALID` key in `config.yaml`. The `MODEL_NUM` key in `config.yaml` represents the epoch # to load and must be defined for this script to run as intended.
 
-3. data/
+### **data/**
    - msa_data/: NP_*.npy files representing each residues of conservative proportion of 20-amino acids
 
    - variant_data/
