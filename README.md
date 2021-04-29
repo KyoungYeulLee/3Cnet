@@ -9,7 +9,7 @@ __3Cnet was trained using the following versions of software:__
 
 <br>
 
-### Preprocess: Docker
+### STEP 1: Preprocess: Docker
 - Follow the steps in this section if you prefer a ready-to-go environment.
 - If you prefer to set up the environment on your own, skip directly to "Clone the 3Cnet repository."
 - We recommend you have at least 40GB of free storage.
@@ -35,7 +35,7 @@ $ cd workspace
 
 <br>
 
-### Clone the 3Cnet repository
+### STEP 2: Clone the 3Cnet repository
 
 ```bash
 $ git clone https://github.com/KyoungYeulLee/3Cnet.git
@@ -43,7 +43,7 @@ $ git clone https://github.com/KyoungYeulLee/3Cnet.git
 
 <br>
 
-### Run `download_data.py` to retrieve necessary files from [Zenodo](https://zenodo.org)
+### STEP 3: Run `download_data.py` to retrieve necessary files from [Zenodo](https://zenodo.org)
 
 ```bash
 $ cd 3Cnet
