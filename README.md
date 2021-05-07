@@ -101,7 +101,7 @@ $ python build_dataset.py
    - <ins>test_model.py</ins>: Evaluate model using values under the `VALID` key in `config.yaml`. The `MODEL_NUM` key in `config.yaml` represents the epoch # to load and must be defined for this script to run as intended.
 
 ### **data/**
-   - msa_data/: NP_*.npy files representing each residues of conservative proportion of 20-amino acids
+   - msa_data/: NP_*.npy files representing each residues of conservative proportion of 21-amino acids
 
    - variant_data/
      - clinvar_data.txt: pathogenic-or-benign-labeled  variants from ClinVar
