@@ -1,4 +1,9 @@
-﻿# Installation
+﻿# Update Log
+## Feb 7, 2022
+- Corrected an error in SNVBOX feature files that led to decreased performance
+  - Please see: https://zenodo.org/record/6016720
+
+# Installation
 
 __3Cnet was trained using the following versions of software:__
 - [Python v3.7](https://www.python.org)

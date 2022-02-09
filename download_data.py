@@ -123,12 +123,14 @@ if __name__ == "__main__":
         help="Example: 12.3456/zenodo.789012",
     )
     parser.add_argument(
-        "-r", "--record", type=str, default="4716879", help="Example: 246802"
+        "-r", "--record", type=str, default="6016720", help="Example: 246802"
     )
     parser.add_argument(
         "-n", "--retries", type=int, default=5, help="Max retry attempts"
     )
-    parser.add_argument("-o", "--outdir", type=str, default=".", help="File save directory")
+    parser.add_argument(
+        "-o", "--outdir", type=str, default=".", help="File save directory"
+    )
     parser.add_argument("-s", "--sandbox", default=False, action="store_true")
     parser.add_argument(
         "-c",
