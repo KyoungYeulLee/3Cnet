@@ -3,13 +3,13 @@ DATA_DIR: ../../data
 MODEL:
   MODEL_DIR: model
   MODEL_TYPE: 3Cnet
-  MODEL_NAME: missense
+  MODEL_NAME: nonsynonymous
   TID_PATH: transcript_ids.txt
   MSA_DIR: msa_data
 
-  DATA_PATH: sequence_data/clinvar_dataset.bin
-  DATA_ID_PATH: sequence_data/clinvar_mut.npy
-  DATA_SNVBOX: SNVBOX_features/clinvar_snvbox.npy # none for zero-padding
+  DATA_PATH: sequence_data/nonsynonymous_dataset.bin
+  DATA_ID_PATH: sequence_data/nonsynonymous_mut.npy
+  DATA_SNVBOX: SNVBOX_features/nonsynonymous_snvbox.npy # none for zero-padding
   ADD_PATH: sequence_data/common_dataset.bin # none for no additional negatives
   ADD_ID_PATH: sequence_data/common_mut.npy
   ADD_SNVBOX: SNVBOX_features/common_snvbox.npy # none for zero-padding
@@ -38,7 +38,7 @@ VALID:
   VALID_DATA_PATH: sequence_data/external_missense_dataset.bin
   VALID_ID_PATH: sequence_data/external_missense_mut.npy
   VALID_SNVBOX: SNVBOX_features/external_missense_snvbox.npy # none for zero-padding
-  USE_TEST_ID: [True] # False uses all the data in VALID_DATA_PATH
+  USE_TEST_ID: [False] # False uses all the data in VALID_DATA_PATH
   VALID_NAME: external_missense
   VALID_METRICS: ['accuracy', 'roc_auc', 'pr_auc'] # give a blank list to skip evaluation.
   VALID_TYPE: single
