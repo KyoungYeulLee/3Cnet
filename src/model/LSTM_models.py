@@ -6,7 +6,6 @@ import sys
 import timeit
 import numpy as np
 import torch
-import torch.tensor as tensor
 import torch.utils.data as td
 import evaluate_metrics as em
 import deep_utilities as du
@@ -16,6 +15,7 @@ import LSTM_networks as mn
 
 USE_CUDA = torch.cuda.is_available
 DEVICE = torch.device("cuda" if USE_CUDA else "cpu")
+tensor = torch.tensor
 
 
 class SingleTask():

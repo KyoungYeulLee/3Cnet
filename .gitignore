@@ -4,6 +4,7 @@
 /data
 !/data/README.md
 *.swp
+*.tar.gz
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
