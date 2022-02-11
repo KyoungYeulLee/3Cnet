@@ -3,8 +3,8 @@ A module containing pytorch networks (torch.nn.module inherited)
 '''
 
 import torch
-import torch.tensor as tensor
 import torch.nn.functional as F
+tensor = torch.tensor
 
 
 class EmblemNet(torch.nn.Module):
