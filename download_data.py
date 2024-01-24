@@ -51,7 +51,6 @@ def gen_download_info(args: argparse.Namespace) -> dict:
             "name": filename,
             "url": item["links"]["self"],
             "size": item["size"],
-            "type": item["type"],
             "checksum": item["checksum"].split(":")[-1],
         }
 
