@@ -1,4 +1,9 @@
 ﻿# Update Log
+
+## Feb 6, 2024 (Scheduled)
+- 3Cnet version 2 will be released. The URL for Zenodo will be also updated.
+- current version has been released as version 1 (see releases)
+
 ## Feb 7, 2022
 - Corrected an error in SNVBOX feature files that led to decreased performance
   - Please see: https://zenodo.org/record/6016720
