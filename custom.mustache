@@ -1,0 +1,41 @@
+{{! Custom Docstring Template }}
+{{summaryPlaceholder}}
+
+{{extendedSummaryPlaceholder}}
+
+Note:
+    {{descriptionPlaceholder}}
+
+{{#parametersExist}}
+Args:
+{{#args}}
+    {{var}} ({{typePlaceholder}}): {{descriptionPlaceholder}}
+{{/args}}
+{{#kwargs}}
+    {{var}} ({{typePlaceholder}}, optional): {{descriptionPlaceholder}}. Defaults to {{&default}}.
+{{/kwargs}}
+{{/parametersExist}}
+
+{{#exceptionsExist}}
+Raises:
+{{#exceptions}}
+    {{type}}: {{descriptionPlaceholder}}
+{{/exceptions}}
+{{/exceptionsExist}}
+
+{{#returnsExist}}
+Returns:
+{{#returns}}
+    {{typePlaceholder}}: {{descriptionPlaceholder}}
+{{/returns}}
+
+Examples:
+    >>> {{descriptionPlaceholder}}
+{{/returnsExist}}
+
+{{#yieldsExist}}
+Yields:
+{{#yields}}
+    {{typePlaceholder}}: {{descriptionPlaceholder}}
+{{/yields}}
+{{/yieldsExist}}

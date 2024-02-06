@@ -1,153 +1,61 @@
-"Script for downloading 3Cnet-related data files"
-
-import argparse
-import hashlib
-from math import ceil
+import logging
 from pathlib import Path
-import requests as req
-from typing import Union
+import subprocess
+import time
 
+from requests import get, Response
 from tqdm import tqdm
 
+ZENODO_BASE_URL = "https://zenodo.org"
+CCCNET_DATA_ACCESSION_ID = 10212255
 
-def gen_download_info(args: argparse.Namespace) -> dict:
-    """
-    Given a Zenodo DOI or a record ID, retrieve dictionary of files available for download and their respective metadata.
-    """
-    if args.sandbox:
-        prefix = "https://sandbox.zenodo.org/api/records/"
-    else:
-        prefix = "https://zenodo.org/api/records/"
+CCCNET_RECORD_URL = f"{ZENODO_BASE_URL}/api/records/{CCCNET_DATA_ACCESSION_ID}"
 
-    if args.record:
-        if not args.record.isnumeric():
-            raise ValueError("Record ID should be entirely numeric")
-        record_url = prefix + args.record
-    elif args.doi:
-        tokens = args.doi.split(".")
-        if "zenodo" not in tokens[0] or not tokens[-1].isnumeric():
-            raise ValueError(
-                f"Either not Zenodo DOI or invalid DOI format: {args.doi}"
-            )
-        record_url = prefix + tokens[-1]
-    else:
-        raise ValueError(
-            "Either record ID or DOI attribute expected, but neither found."
-        )
+# Path to save downloaded archive
+DESTINATION_PATH = Path(__file__).parent / "data.tar.gz"
+N_MAX_ATTEMPTS = 5
 
-    res = req.get(record_url)
+DESTINATION_PATH.parent.mkdir(mode=0o744, parents=True, exist_ok=True)
 
-    if res.status_code != req.codes.ok:
+logger = logging.getLogger()
+streamhandler = logging.StreamHandler()
+logger.setLevel(logging.INFO)
+
+logger.addHandler(streamhandler)
+
+logger.info(f"Downloaded file will be saved to {DESTINATION_PATH}.")
+logger.info(f"Retrieving record details...")
+res = get(url=CCCNET_RECORD_URL)
+res.raise_for_status()
+record_json = res.json()
+
+cccnet_data_download_url = record_json["files"][0]["links"]["self"]
+data_download_size = record_json["files"][0]["size"]
+
+for attempt in range(1, N_MAX_ATTEMPTS + 1):
+    try:
+        logger.info(f"Initiating download attempt {attempt} of {N_MAX_ATTEMPTS}...")
+        res: Response = get(url=cccnet_data_download_url, stream=True)
         res.raise_for_status()
 
-    dl_res = res.json()["files"]
-
-    dl_info = dict()
-    for item in dl_res:
-        filename = item["key"]
-
-        # size is in bytes
-        dl_info[filename] = {
-            "name": filename,
-            "url": item["links"]["self"],
-            "size": item["size"],
-            "checksum": item["checksum"].split(":")[-1],
-        }
-
-    return dl_info
-
-
-def download_file(
-    dl_item: dict,
-    save_dir: Union[str, Path],
-    n_retries: int,
-    skip_existing: bool = True,
-    verify_checksum: bool = True,
-):
-    """
-    Attempt to download a file from Zenodo.
-    The `dl_item` parameter accepts one item from the `dl_info` dict returned in `gen_download_info`.
-    """
-    filename = dl_item["name"]
-    save_path = Path(save_dir) / filename
-
-    url = dl_item["url"]
-    chunk_size = 1000  # 1000 Bytes = 1 Kilobyte
-
-    print(f">>> Downloading {filename}...")
-
-    if skip_existing and save_path.exists():
-        print(f"{filename} already exists in {save_dir}; Download skipped.")
-        return
-
-    for attempt in range(1, n_retries + 1):
-        try:
-            res = req.get(url, stream=True)
-            with save_path.open("wb") as handle:
-                for chunk in tqdm(
-                    res.iter_content(chunk_size=chunk_size),
-                    total=ceil(dl_item["size"] / chunk_size),
-                    unit="kB",
-                ):
-                    handle.write(chunk)
-            break
-        except Exception as e:
-            print(
-                f"Download interrupted: {filename} (cause: {e}, attempt {attempt} of {n_retries})"
-            )
-            continue
-
-    if verify_checksum:
-        print("Verifying checksum...")
-        reference_checksum = dl_item["checksum"]
-        with save_path.open("rb") as handle2:
-            generated_checksum = hashlib.md5(handle2.read()).hexdigest()
-
-        if reference_checksum == generated_checksum:
-            print("Checksum OK")
-            return
-        else:
-            raise RuntimeError(f"Checksum does not match for {filename}")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(
-        description="Script for downloading files from Zenodo using records IDs or DOIs"
-    )
-    parser.add_argument(
-        "-d",
-        "--doi",
-        type=str,
-        default="",
-        help="Example: 12.3456/zenodo.789012",
-    )
-    parser.add_argument(
-        "-r", "--record", type=str, default="6016720", help="Example: 246802"
-    )
-    parser.add_argument(
-        "-n", "--retries", type=int, default=5, help="Max retry attempts"
-    )
-    parser.add_argument(
-        "-o", "--outdir", type=str, default=".", help="File save directory"
-    )
-    parser.add_argument("-s", "--sandbox", default=False, action="store_true")
-    parser.add_argument(
-        "-c",
-        "--verify",
-        default=False,
-        action="store_true",
-        help="Verify md5 checksum after each download?",
-    )
-    args = parser.parse_args()
-
-    dl_info = gen_download_info(args)
-
-    print(f"Downloading {len(dl_info.keys())} file(s): ")
-    for key, val in dl_info.items():
-        download_file(
-            dl_item=val,
-            save_dir=args.outdir,
-            n_retries=args.retries,
-            skip_existing=False,
-            verify_checksum=args.verify,
+        progbar = tqdm(
+            desc="Downloading data for 3Cnet...",
+            mininterval=0.5,
+            total=data_download_size,
+            unit_scale=True,
+            unit="B",
         )
+        with DESTINATION_PATH.open(mode="wb") as fh:
+            for chunk in res.iter_content():
+                fh.write(chunk)
+                progbar.update(len(chunk))
+
+        break
+
+    except Exception as e:
+        logger.error(f"Download attempt {attempt} failed due to {e}, retrying...")
+        time.sleep(1.0)
+        continue
+
+logger.info("Extracting downloaded archive...")
+subprocess.run(args=["tar", "-xzf", str(DESTINATION_PATH)], check=True)
