@@ -1,0 +1,45 @@
+DATA_DIR: data
+SEQUENCES: ${DATA_DIR}/reference_sequences.tsv
+MSA_DIR: ${DATA_DIR}/msa_arrays
+HGVSPS:
+  TRAIN:
+    ROOT: ${DATA_DIR}/train_hgvsps
+    CLINICAL: ${HGVSPS.TRAIN.ROOT}/train_clinvar_hgvsps.tsv
+    COMMON: ${HGVSPS.TRAIN.ROOT}/train_gnomad_hgvsps.tsv
+    CONSERVATION: ${HGVSPS.TRAIN.ROOT}/train_conservation_hgvsps.tsv
+  TEST:
+    ROOT: ${DATA_DIR}/test_hgvsps
+    EXTERNAL_CLINVAR: ${HGVSPS.TEST.ROOT}/test_clinvar_hgvsps.tsv
+    INHOUSE: ${HGVSPS.TEST.ROOT}/test_inhouse_hgvsps.tsv
+
+MODEL_DIR: ${DATA_DIR}/models
+TRIAN:
+  WIN_SIZE: 100 # seq_length = 2 * win_size + 1
+  MSA_AA_SIZE: 21
+  MODEL_NAME: MultiTask
+  SINGLE_TASK:
+    NUM_AA: 23
+    EMBED_SIZE: 16
+    HIDDEN_SIZE: 64
+    OUTPUT_SIZE: 64
+    FC_SIZE: 32
+  MULTI_TASK:
+    NUM_AA: 23
+    EMBED_SIZE: 16
+    HIDDEN_SIZE: 64
+    OUTPUT_SIZE: 64
+    FC_SIZE: 32
+  HYPERPARAMS:
+    OPTIMIZER: RMSP
+    LOSS: CEL
+    BATCH_SIZE: 128
+    LEARNING_RATE: 0.001
+    DROPOUT: 0.5
+    EPOCH: 50
+    PATIENCE: 10
+  SAVE_EACH_EPOCH: False
+  MISSENSE_ONLY: False
+  VALIDATION_RATIO: 0.05 # the proportion of training dataset to use for validation
+TEST:
+  MODEL_EPOCH: 31
+  BATCH_SIZE: 2048 # the length of dataset to evaluate at once.
