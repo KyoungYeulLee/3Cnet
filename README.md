@@ -1,8 +1,8 @@
 ﻿# Update Log
 
-## Feb 6, 2024
+## Feb 7, 2024
 - Released 3Cnet version 2.0
-  - Please see: https://zenodo.org/record/6016720
+  - Please see: https://zenodo.org/records/10212255
   - Major changes
     - 3Cnet v2 is no longer dependent to SNVBOX features.
     - Almost all types of in-exon variants can be inferred (see neuron/constants.py).
