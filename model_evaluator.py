@@ -2,6 +2,7 @@
 The module for evaluating the scores of variant
 and assessing the performance if labels are given.
 """
+
 import os
 import sys
 import argparse
@@ -34,22 +35,23 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 
 def receive_args() -> argparse.Namespace:
-    """ receive arguments given by a user
+    """receive arguments given by a user
 
     Returns (argparse.Namespace): parsed arguments
     """
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-m",
-        "--model_name",
-        type=str,
-        help="the model name to use for inference (the dir name within model_dir)",
-    )
-    parser.add_argument(
         "-e",
         "--epoch_num",
         type=int,
         help="the epoch nuber of the model to be used",
+    )
+    parser.add_argument(
+        "-m",
+        "--model_name",
+        type=str,
+        default="",
+        help="the model name to use for inference (the dir name within model_dir)",
     )
     parser.add_argument(
         "-s",
@@ -61,8 +63,9 @@ def receive_args() -> argparse.Namespace:
 
     return parser.parse_args()
 
+
 class Evaluator:
-    """ Class to evaluate variants to get scores
+    """Class to evaluate variants to get scores
         and performance of the assessment
     Notes:
         Some HGVSp failed to be featurized can be omitted
@@ -73,12 +76,13 @@ class Evaluator:
         self.data_builder (Builder): builder for pytorch dataset
         self.model (torch.nn.Module): the model object. initially None.
     """
+
     def __init__(
         self,
         config: dict,
         model_name: str,
         epoch_num: int,
-        save_name: str="",
+        save_name: str = "",
         logger=Logger(__name__),
     ):
         self.logger = logger
@@ -92,7 +96,7 @@ class Evaluator:
             logger.info("#Error: Model directory not found")
             sys.exit(1)
 
-        self.eval_dir = os.path.join(self.model_dir, 'EVAL')
+        self.eval_dir = os.path.join(self.model_dir, "EVAL")
         if save_name:
             self.eval_dir = os.path.join(self.eval_dir, save_name)
         if os.path.exists(self.eval_dir):
@@ -109,9 +113,9 @@ class Evaluator:
             logger,
         )
         self.model_type = config.ARCHITECTURES.MODEL_TYPE
-        if self.model_type == 'SingleTask':
+        if self.model_type == "SingleTask":
             self.model_config = config.ARCHITECTURES.SINGLE_TASK
-        elif self.model_type == 'MultiTask':
+        elif self.model_type == "MultiTask":
             self.model_config = config.ARCHITECTURES.MULTI_TASK
         else:
             logger.info("#ERROR: Unexpected model name in configuration")
@@ -125,9 +129,9 @@ class Evaluator:
 
     def load_test_dataset(
         self,
-        test_hgvsp_path: str="",
+        test_hgvsp_path: str = "",
     ) -> Tuple[ThreeCnetDataset, Dict]:
-        """ Load test dataset
+        """Load test dataset
         Notes:
             Some HGVSp can be omitted during the process. See log files.
 
@@ -145,9 +149,7 @@ class Evaluator:
         mapping_dict = dict()
 
         self.logger.info("...Building dataset from the hgvsp files...")
-        test_seqs = self.data_builder.parse_HGVSPs(
-            test_hgvsp_path, missense_only=False
-        )
+        test_seqs = self.data_builder.parse_HGVSPs(test_hgvsp_path, missense_only=False)
 
         # Make pytorch dataset
         test_dataset = self.data_builder.get_torch_dataset(
@@ -163,7 +165,7 @@ class Evaluator:
         return test_dataset, mapping_dict
 
     def build_model(self) -> bool:
-        """ Build the model object based on the configuration.
+        """Build the model object based on the configuration.
         Notes:
             self.model is None after initialization.
             This function builds the model and annotates it to self.model.
@@ -171,28 +173,28 @@ class Evaluator:
             (bool): True if succeed to build the model else False
         """
         self.model = None
-        if self.model_type == 'SingleTask':
+        if self.model_type == "SingleTask":
             self.model = SingleTask(
-                num_aa = self.model_config['NUM_AA'],
-                msa_aa_size = self.msa_aa_size,
-                embed_dim = self.model_config['EMBED_SIZE'],
-                hidden_dim = self.model_config['HIDDEN_SIZE'],
-                output_dim = self.model_config['OUTPUT_SIZE'],
-                fc_size = self.model_config['FC_SIZE'],
-                n_classes = 2,
-                p_dropout = 0.0,  # no dropout
+                num_aa=self.model_config["NUM_AA"],
+                msa_aa_size=self.msa_aa_size,
+                embed_dim=self.model_config["EMBED_SIZE"],
+                hidden_dim=self.model_config["HIDDEN_SIZE"],
+                output_dim=self.model_config["OUTPUT_SIZE"],
+                fc_size=self.model_config["FC_SIZE"],
+                n_classes=2,
+                p_dropout=0.0,  # no dropout
             ).to(DEVICE)
 
-        elif self.model_type == 'MultiTask':
+        elif self.model_type == "MultiTask":
             self.model = MultiTask(
-                num_aa = self.model_config['NUM_AA'],
-                msa_aa_size = self.msa_aa_size,
-                embed_dim = self.model_config['EMBED_SIZE'],
-                hidden_dim = self.model_config['HIDDEN_SIZE'],
-                output_dim = self.model_config['OUTPUT_SIZE'],
-                fc_size = self.model_config['FC_SIZE'],
-                n_classes = 2,
-                p_dropout = 0.0,  # no dropout
+                num_aa=self.model_config["NUM_AA"],
+                msa_aa_size=self.msa_aa_size,
+                embed_dim=self.model_config["EMBED_SIZE"],
+                hidden_dim=self.model_config["HIDDEN_SIZE"],
+                output_dim=self.model_config["OUTPUT_SIZE"],
+                fc_size=self.model_config["FC_SIZE"],
+                n_classes=2,
+                p_dropout=0.0,  # no dropout
             ).to(DEVICE)
 
         if self.model is None:
@@ -204,8 +206,8 @@ class Evaluator:
     def test_model(
         self,
         test_dataset: ThreeCnetDataset,
-        mapping_dict: dict=dict(),
-        save_dir: str=""
+        mapping_dict: dict = dict(),
+        save_dir: str = "",
     ) -> Dict[str, Tuple[float, int]]:
         """test dataset by the model and return the result
         Notes:
@@ -238,25 +240,22 @@ class Evaluator:
         pred_stack = []
         ans_stack = []
         for batch in test_loader:
-            if self.model_type == 'SingleTask':
+            if self.model_type == "SingleTask":
                 out_tensor = self.model(
-                    batch['ref'],
-                    batch['alt'],
-                    batch['msa'],
+                    batch["ref"],
+                    batch["alt"],
+                    batch["msa"],
                 )  # (batch, n_classes) <- float(0 ~ 1)
-            elif self.model_type == 'MultiTask':
+            elif self.model_type == "MultiTask":
                 out_tensor = self.model(
-                    batch['ref'],
-                    batch['alt'],
-                    batch['msa'],
-                    is_clinical=True
+                    batch["ref"], batch["alt"], batch["msa"], is_clinical=True
                 )  # shape = (batch, n_classes) <- float(0 ~ 1)
             out_tensor = softmax(out_tensor, dim=1)  # softmax activation
             pred = out_tensor.detach().cpu().numpy()[:, 1]
-                # get pathogenic probability
+            # get pathogenic probability
             pred_stack.append(pred)
-            ans = batch['label'].detach().cpu().numpy()
-                # shape = (batch,), int(0, 1, -1), -1 means no label
+            ans = batch["label"].detach().cpu().numpy()
+            # shape = (batch,), int(0, 1, -1), -1 means no label
             ans_stack.append(ans)
         pred_stack = np.concatenate(pred_stack, axis=0)
         ans_stack = np.concatenate(ans_stack, axis=0)
@@ -301,7 +300,7 @@ class Evaluator:
             key2scores[key] = (pred, ans)
 
         if save_dir:
-            with open(save_dir,'w') as fout:
+            with open(save_dir, "w") as fout:
                 fout.write(f"##ACC={acc},ROCAUC={roc_auc},PRAUC={pr_auc}\n")
                 fout.write("#ID\tHGVSp\tPRED\tANS\n")
                 for key, (pred, ans) in key2scores.items():
@@ -311,7 +310,7 @@ class Evaluator:
         return key2scores
 
     def evaluate(self, do_save: bool) -> dict:
-        """ Dataset & model loading and testing
+        """Dataset & model loading and testing
         Args:
             do_save (bool): if True, save the result to a file.
         Returns:
@@ -329,9 +328,7 @@ class Evaluator:
             # Load model parameter
             self.logger.info("...Loading model...")
             self.model.load_state_dict(
-                torch.load(
-                    os.path.join(self.model_dir, f"{self.model_epoch}.pt")
-                )
+                torch.load(os.path.join(self.model_dir, f"{self.model_epoch}.pt"))
             )
 
         # Get test dataset and ID mapping dictionary
@@ -340,7 +337,7 @@ class Evaluator:
                 f"#ERROR: no test dataset named {self.test_name} (see config)"
             )
             return dict()
-        
+
         test_hgvsp_path = self.test_data[self.test_name]
         test_dataset, mapping_dict = self.load_test_dataset(
             test_hgvsp_path=test_hgvsp_path,
@@ -353,7 +350,7 @@ class Evaluator:
         self.logger.info("...Testing model...")
         save_dir = ""
         if do_save:
-            save_dir = os.path.join(self.eval_dir, 'pred.tsv')
+            save_dir = os.path.join(self.eval_dir, "pred.tsv")
 
         key2scores = self.test_model(
             test_dataset,
@@ -368,7 +365,7 @@ if __name__ == "__main__":
     ARGS = receive_args()
     CONFIG = get_config()
     LOGGER = get_logger(
-        module_name = Path(__file__).stem,
+        module_name=Path(__file__).stem,
         data_dir=CONFIG.MODEL_DIR,
         file_name=ARGS.save_name,
     )
@@ -377,11 +374,11 @@ if __name__ == "__main__":
     model_evaluator = Evaluator(
         CONFIG, ARGS.model_name, ARGS.epoch_num, ARGS.save_name, LOGGER
     )
-    LOGGER.info('...Evaluation start...')
+    LOGGER.info("...Evaluation start...")
 
     if model_evaluator.evaluate(do_save=True):
         LOGGER.info("### Correctly finished")
     else:
         LOGGER.info("### Unexpected exit")
 
-    LOGGER.info('...Evaluation end...')
+    LOGGER.info("...Evaluation end...")
