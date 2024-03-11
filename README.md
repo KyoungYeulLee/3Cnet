@@ -1,5 +1,16 @@
 ﻿# Update Log
 
+## Mar 11, 2024
+- A sample trained model is added to the github. (`3Cnet/MT_models/36.pt`)
+  - You can test the model even without GPU resources. (automatically use CPU instead)
+  - Training a new model may need GPU resources.
+
+- To test the model
+```bash
+$ python model_evaluator.py -e 36
+```
+  - To evaluate your own variants, you may need to add a HGVSp written file and change omegaconf.yaml.
+
 ## Feb 7, 2024
 - Released 3Cnet version 2.0
   - Please see: https://zenodo.org/records/10212255
