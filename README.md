@@ -1,5 +1,10 @@
-﻿# Update Log
 
+# 3Cnet: pathogenicity prediction of human variants using multitask learning with evolutionary constraints
+- Developed by 3billion Co.
+- Published online (16 July 2021) @ bioinformatics (OUP)
+  - https://academic.oup.com/bioinformatics/article/37/24/4626/6322986
+
+# Update logs
 ## Mar 11, 2024
 - A sample trained model is added to the github. (`3Cnet/MT_models/36.pt`)
   - You can test the model even without GPU resources. (automatically use CPU instead)
