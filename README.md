@@ -5,14 +5,30 @@
   - https://academic.oup.com/bioinformatics/article/37/24/4626/6322986
 
 # Update logs
+## May 31, 2026
+- A new model, **3Cnet v2.3**, has been released (`MT_models/v2-3/38.pt`); the previous v2.0 sample model moved to `MT_models/v2-0/36.pt`.
+- To test v2.3: `$ python model_evaluator.py -m v2-3 -e 38`
+- Recommended score thresholds: **pathogenic ≥ 0.75**, **benign ≤ 0.1**.
+- v2.3 improves on v2.0. An even higher-performing **v2.5** model — additionally trained on variants from in-house patient data — is available; please contact [**3billion, Inc.**](https://3billion.io/)
+
+Missense performance, v2.3 vs v2.5 (thresholds: pathogenic ≥ 0.75, benign ≤ 0.1):
+
+| Metric | v2.3 | v2.5 |
+| :-- | :-: | :-: |
+| ROC-AUC | 94.6% | 97.5% |
+| Precision (pathogenic) | 91.0% | 94.7% |
+| Recall (pathogenic) | 64.0% | 73.9% |
+| NPV (benign) | 96.9% | 98.4% |
+| Specificity (benign) | 88.2% | 91.0% |
+
 ## Mar 11, 2024
-- A sample trained model is added to the github. (`3Cnet/MT_models/36.pt`)
+- A sample trained model is added to the github. (`MT_models/v2-0/36.pt`)
   - You can test the model even without GPU resources. (automatically use CPU instead)
   - Training a new model may need GPU resources.
 
 - To test the model
 ```bash
-$ python model_evaluator.py -e 36
+$ python model_evaluator.py -m v2-0 -e 36
 ```
   - To evaluate your own variants, you may need to add a HGVSp written file and change omegaconf.yaml.
 
@@ -102,9 +118,9 @@ $ python model_trainer.py -s model_name
 2. To evaluate 3Cnet performance
 
 ```bash
-$ python model_evaluator.py -m model_name -e 30 -s test_result
+$ python model_evaluator.py -m v2-3 -e 38 -s test_result
 ```
-Note that you need to select a proper epoch number (30 in the example)
+Note that you need to select a proper epoch number (38 for v2.3 in the example)
 
 
 <br>
